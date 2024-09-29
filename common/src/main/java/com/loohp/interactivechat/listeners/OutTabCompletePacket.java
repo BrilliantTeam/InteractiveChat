@@ -32,11 +32,7 @@ import com.loohp.interactivechat.nms.NMS;
 import com.loohp.interactivechat.objectholders.ICPlayer;
 import com.loohp.interactivechat.objectholders.ICPlayerFactory;
 import com.loohp.interactivechat.objectholders.ValuePairs;
-import com.loohp.interactivechat.utils.ChatColorUtils;
-import com.loohp.interactivechat.utils.ComponentStyling;
-import com.loohp.interactivechat.utils.InteractiveChatComponentSerializer;
-import com.loohp.interactivechat.utils.PlaceholderParser;
-import com.loohp.interactivechat.utils.PlayerUtils;
+import com.loohp.interactivechat.utils.*;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.suggestion.Suggestion;
@@ -59,7 +55,7 @@ public class OutTabCompletePacket {
     private static AtomicReference<Map<String, UUID>> playernames = new AtomicReference<>(new HashMap<>());
 
     public static void tabCompleteListener() {
-        Bukkit.getScheduler().runTaskTimerAsynchronously(InteractiveChat.plugin, () -> {
+        ScheduleUtil.GLOBAL.runTaskTimerAsynchronously(InteractiveChat.plugin, () -> {
             if (InteractiveChat.useTooltipOnTab) {
                 Map<String, UUID> playernames = new HashMap<>();
                 for (ICPlayer player : ICPlayerFactory.getOnlineICPlayers()) {
@@ -72,9 +68,9 @@ public class OutTabCompletePacket {
                         playernames.put(ChatColorUtils.stripColor(name), player.getUniqueId());
                     }
                 }
-                Bukkit.getScheduler().runTask(InteractiveChat.plugin, () -> OutTabCompletePacket.playernames.set(playernames));
+                ScheduleUtil.GLOBAL.runTask(InteractiveChat.plugin, () -> OutTabCompletePacket.playernames.set(playernames));
             }
-        }, 0, 100);
+        }, 1, 100);
 
         InteractiveChat.protocolManager.addPacketListener(new PacketAdapter(PacketAdapter.params().optionAsync().plugin(InteractiveChat.plugin).listenerPriority(ListenerPriority.HIGHEST).types(PacketType.Play.Server.TAB_COMPLETE)) {
             @Override

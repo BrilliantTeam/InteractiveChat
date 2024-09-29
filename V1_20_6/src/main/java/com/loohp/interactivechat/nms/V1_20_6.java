@@ -35,6 +35,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
+import de.tr7zw.nbtapi.utils.DataFixerUtil;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.DataComponentValue;
@@ -336,9 +337,11 @@ public class V1_20_6 extends NMSWrapper {
         try {
             IRegistryCustom registryAccess = ((CraftWorld) Bukkit.getWorlds().get(0)).getHandle().H_();
             NBTTagCompound nbtTagCompound = MojangsonParser.a(json);
+            NBTTagCompound compound = (NBTTagCompound) DataFixerUtil.fixUpRawItemData(
+                    nbtTagCompound, DataFixerUtil.VERSION1_20_4, DataFixerUtil.VERSION1_20_5);
             net.minecraft.world.item.ItemStack itemStack = net.minecraft.world.item.ItemStack.a(registryAccess, nbtTagCompound);
             return toBukkitCopy(itemStack);
-        } catch (CommandSyntaxException e) {
+        } catch (CommandSyntaxException | NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }

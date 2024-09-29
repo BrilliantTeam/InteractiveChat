@@ -70,6 +70,7 @@ public class EcoHook {
         if (!InteractiveChat.ecoSetLoreOnMainThread || Bukkit.isPrimaryThread()) {
             return CompletableFuture.completedFuture(setEcoLore0(itemStack.clone(), player));
         } else {
+            // todo
             return Bukkit.getScheduler().callSyncMethod(InteractiveChat.plugin, () -> setEcoLore0(itemStack.clone(), player));
         }
     }

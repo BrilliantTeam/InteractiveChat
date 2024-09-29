@@ -27,10 +27,7 @@ import com.loohp.interactivechat.bungeemessaging.BungeeMessageSender;
 import com.loohp.interactivechat.objectholders.LimitedQueue;
 import com.loohp.interactivechat.objectholders.ValuePairs;
 import com.loohp.interactivechat.objectholders.ValueTrios;
-import com.loohp.interactivechat.utils.ComponentCompacting;
-import com.loohp.interactivechat.utils.ComponentFlattening;
-import com.loohp.interactivechat.utils.InteractiveChatComponentSerializer;
-import com.loohp.interactivechat.utils.PlayerUtils;
+import com.loohp.interactivechat.utils.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -162,7 +159,7 @@ public class FloodgateHook implements Listener {
         } else {
             Player player = Bukkit.getPlayer(uuid);
             if (player != null) {
-                Bukkit.getScheduler().runTask(InteractiveChat.plugin, () -> PlayerUtils.dispatchCommandAsPlayer(player, command));
+                ScheduleUtil.ENTITY.runTask(InteractiveChat.plugin, player, () -> PlayerUtils.dispatchCommandAsPlayer(player, command));
             }
         }
     }

@@ -21,6 +21,7 @@
 package com.loohp.interactivechat.data;
 
 import com.loohp.interactivechat.InteractiveChat;
+import com.loohp.interactivechat.utils.ScheduleUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -69,7 +70,7 @@ public class PlayerDataManager implements Listener {
         Player player = event.getPlayer();
         UUID playerUUID = player.getUniqueId();
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        ScheduleUtil.GLOBAL.runTaskAsynchronously(plugin, () -> {
             if (!database.playerExists(playerUUID)) {
                 database.createPlayer(playerUUID, player.getName());
             }
@@ -82,7 +83,7 @@ public class PlayerDataManager implements Listener {
     public void onLeave(PlayerQuitEvent event) {
         PlayerData pd = data.remove(event.getPlayer().getUniqueId());
         if (pd != null) {
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> pd.save());
+            ScheduleUtil.GLOBAL.runTaskAsynchronously(plugin, () -> pd.save());
         }
     }
 

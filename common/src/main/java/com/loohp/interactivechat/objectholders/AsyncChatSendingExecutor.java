@@ -23,6 +23,7 @@ package com.loohp.interactivechat.objectholders;
 import com.comphenix.protocol.events.PacketContainer;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.loohp.interactivechat.InteractiveChat;
+import com.loohp.interactivechat.utils.ScheduleUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -58,7 +59,7 @@ public class AsyncChatSendingExecutor implements AutoCloseable {
     private final Map<UUID, Map<UUID, OutboundPacket>> waitingPackets;
     private final Map<UUID, Long> lastSuccessfulCheck;
 
-    private final List<Integer> taskIds;
+    private final List<ICTask> taskIds;
     private final AtomicBoolean isValid;
 
     public AsyncChatSendingExecutor(LongSupplier executionWaitTime, long killThreadAfter) {
@@ -124,10 +125,8 @@ public class AsyncChatSendingExecutor implements AutoCloseable {
     @Override
     public synchronized void close() throws Exception {
         isValid.set(false);
-        for (int id : taskIds) {
-            if (id >= 0) {
-                Bukkit.getScheduler().cancelTask(id);
-            }
+        for (ICTask t : taskIds) {
+            t.cancel();
         }
         executor.shutdown();
     }
@@ -196,8 +195,8 @@ public class AsyncChatSendingExecutor implements AutoCloseable {
         }, "InteractiveChat Async ChatPacket Ordered Sending Thread").start();
     }
 
-    private int packetSender() {
-        return Bukkit.getScheduler().runTaskTimer(InteractiveChat.plugin, () -> {
+    private ICTask packetSender() {
+        Runnable t = () -> {
             while (!sendingQueue.isEmpty()) {
                 OutboundPacket out = sendingQueue.poll();
                 try {
@@ -208,7 +207,13 @@ public class AsyncChatSendingExecutor implements AutoCloseable {
                     e.printStackTrace();
                 }
             }
-        }, 0, 1).getTaskId();
+        };
+
+        if (ScheduleUtil.isFolia) {
+            return new ICTask(Bukkit.getGlobalRegionScheduler().runAtFixedRate(InteractiveChat.plugin, (ignored) -> t.run(), 1, 5));
+        }
+
+        return new ICTask(Bukkit.getScheduler().runTaskTimer(InteractiveChat.plugin, t, 0, 5));
     }
 
     private void monitor() {

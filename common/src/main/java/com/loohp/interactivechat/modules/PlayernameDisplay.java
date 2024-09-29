@@ -24,12 +24,7 @@ import com.loohp.interactivechat.InteractiveChat;
 import com.loohp.interactivechat.objectholders.ICPlayer;
 import com.loohp.interactivechat.objectholders.ICPlayerFactory;
 import com.loohp.interactivechat.objectholders.ReplaceTextBundle;
-import com.loohp.interactivechat.utils.ChatColorUtils;
-import com.loohp.interactivechat.utils.CollectionUtils;
-import com.loohp.interactivechat.utils.ComponentCompacting;
-import com.loohp.interactivechat.utils.ComponentReplacing;
-import com.loohp.interactivechat.utils.CustomStringUtils;
-import com.loohp.interactivechat.utils.PlaceholderParser;
+import com.loohp.interactivechat.utils.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.TranslatableComponent;
@@ -64,15 +59,15 @@ public class PlayernameDisplay implements Listener {
 
     public static void setup() {
         Bukkit.getPluginManager().registerEvents(new PlayernameDisplay(), InteractiveChat.plugin);
-        Bukkit.getScheduler().runTaskTimerAsynchronously(InteractiveChat.plugin, () -> {
+        ScheduleUtil.GLOBAL.runTaskTimerAsynchronously(InteractiveChat.plugin, () -> {
             int valid = flag.get();
             Collection<ReplaceTextBundle> names = getNames();
-            Bukkit.getScheduler().runTask(InteractiveChat.plugin, () -> {
+            ScheduleUtil.GLOBAL.runTask(InteractiveChat.plugin, () -> {
                 if (flag.get() == valid) {
                     PlayernameDisplay.names = names;
                 }
             });
-        }, 0, 100);
+        }, 1, 100);
     }
 
     public static Component process(Component component, Optional<ICPlayer> sender, Player receiver, long unix) {

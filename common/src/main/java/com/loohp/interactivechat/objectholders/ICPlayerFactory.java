@@ -21,16 +21,15 @@
 package com.loohp.interactivechat.objectholders;
 
 import com.loohp.interactivechat.InteractiveChat;
-import com.loohp.interactivechat.api.events.ICPlayerJoinEvent;
-import com.loohp.interactivechat.api.events.ICPlayerQuitEvent;
-import com.loohp.interactivechat.api.events.OfflineICPlayerCreationEvent;
-import com.loohp.interactivechat.api.events.OfflineICPlayerUpdateEvent;
+import com.loohp.interactivechat.api.events.*;
 import com.loohp.interactivechat.utils.InventoryUtils;
 import com.loohp.interactivechat.utils.ItemNBTUtils;
+import com.loohp.interactivechat.utils.ScheduleUtil;
 import net.craftersland.data.bridge.PD;
 import net.craftersland.data.bridge.objects.DatabaseEnderchestData;
 import net.craftersland.data.bridge.objects.DatabaseExperienceData;
 import net.craftersland.data.bridge.objects.DatabaseInventoryData;
+import net.kyori.adventure.text.Component;
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.io.SNBTUtil;
@@ -86,11 +85,12 @@ public class ICPlayerFactory {
             @EventHandler(priority = EventPriority.MONITOR)
             public void onJoinConfirm(PlayerLoginEvent event) {
                 if (!event.getResult().equals(Result.ALLOWED)) {
-                    onLeave(new PlayerQuitEvent(event.getPlayer(), null));
+                    onLeave(new PlayerQuitEvent(event.getPlayer(), Component.empty()));
                 } else {
                     UUID uuid = event.getPlayer().getUniqueId();
                     LOGGING_IN.remove(uuid);
-                    Bukkit.getPluginManager().callEvent(new ICPlayerJoinEvent(getICPlayer(uuid), false));
+                    ScheduleUtil.GLOBAL.runTask(InteractiveChat.plugin, () ->
+                            Bukkit.getPluginManager().callEvent(new ICPlayerJoinEvent(getICPlayer(uuid), false)));
                 }
             }
 
@@ -101,14 +101,15 @@ public class ICPlayerFactory {
                     if (!REMOTE_UUID.contains(uuid)) {
                         ICPlayer icplayer = ICPLAYERS.remove(uuid);
                         if (icplayer != null && LOGGING_IN.remove(uuid) == null) {
-                            Bukkit.getPluginManager().callEvent(new ICPlayerQuitEvent(icplayer, false));
+                            ScheduleUtil.GLOBAL.runTask(InteractiveChat.plugin, () ->
+                                    Bukkit.getPluginManager().callEvent(new ICPlayerQuitEvent(icplayer, false)));
                         }
                     }
                 }
             }
         }, InteractiveChat.plugin);
 
-        Bukkit.getScheduler().runTaskTimerAsynchronously(InteractiveChat.plugin, () -> REFERENCED_OFFLINE_PLAYERS.values().removeIf(each -> each.get() == null), 12000, 12000);
+        ScheduleUtil.GLOBAL.runTaskTimerAsynchronously(InteractiveChat.plugin, () -> REFERENCED_OFFLINE_PLAYERS.values().removeIf(each -> each.get() == null), 12000, 12000);
     }
 
     public static RemotePlayerCreateResult createOrUpdateRemoteICPlayer(String server, String name, UUID uuid, boolean rightHanded, int selectedSlot, int experienceLevel, Inventory inventory, Inventory enderchest, boolean vanished) {
@@ -119,7 +120,9 @@ public class ICPlayerFactory {
                 icplayer = new ICPlayer(server, name, uuid, rightHanded, selectedSlot, experienceLevel, inventory, enderchest, vanished);
                 ICPLAYERS.put(uuid, icplayer);
                 newlyCreated = true;
-                Bukkit.getPluginManager().callEvent(new ICPlayerJoinEvent(icplayer, true));
+                ICPlayer finalIcplayer = icplayer;
+                ScheduleUtil.GLOBAL.runTask(InteractiveChat.plugin, () ->
+                        Bukkit.getPluginManager().callEvent(new ICPlayerJoinEvent(finalIcplayer, true)));
             } else {
                 icplayer.setRemoteServer(server);
                 icplayer.setRemoteName(name);
@@ -249,11 +252,13 @@ public class ICPlayerFactory {
             if (offlineICPlayer == null) {
                 offlineICPlayer = new OfflineICPlayer(uuid);
                 OfflineICPlayerCreationEvent event = new OfflineICPlayerCreationEvent(offlineICPlayer);
-                Bukkit.getPluginManager().callEvent(event);
+                ScheduleUtil.GLOBAL.runTask(InteractiveChat.plugin, () ->
+                        Bukkit.getPluginManager().callEvent(event));
                 REFERENCED_OFFLINE_PLAYERS.put(uuid, new WeakReference<>(offlineICPlayer));
             } else {
                 OfflineICPlayerUpdateEvent event = new OfflineICPlayerUpdateEvent(offlineICPlayer);
-                Bukkit.getPluginManager().callEvent(event);
+                ScheduleUtil.GLOBAL.runTask(InteractiveChat.plugin, () ->
+                        Bukkit.getPluginManager().callEvent(event));
             }
             return offlineICPlayer;
         }
@@ -330,7 +335,8 @@ public class ICPlayerFactory {
             if (offlineICPlayer == null) {
                 offlineICPlayer = new OfflineICPlayer(uuid, playerName, selectedSlot, rightHanded, xpLevel, inventory, enderchest);
                 OfflineICPlayerCreationEvent event = new OfflineICPlayerCreationEvent(offlineICPlayer);
-                Bukkit.getPluginManager().callEvent(event);
+                ScheduleUtil.GLOBAL.runTask(InteractiveChat.plugin, () ->
+                        Bukkit.getPluginManager().callEvent(event));
                 REFERENCED_OFFLINE_PLAYERS.put(uuid, new WeakReference<>(offlineICPlayer));
             } else {
                 offlineICPlayer.setName(playerName);
@@ -340,7 +346,8 @@ public class ICPlayerFactory {
                 offlineICPlayer.setInventory(inventory);
                 offlineICPlayer.setEnderchest(enderchest);
                 OfflineICPlayerUpdateEvent event = new OfflineICPlayerUpdateEvent(offlineICPlayer);
-                Bukkit.getPluginManager().callEvent(event);
+                ScheduleUtil.GLOBAL.runTask(InteractiveChat.plugin, () ->
+                        Bukkit.getPluginManager().callEvent(event));
             }
             return offlineICPlayer;
         } catch (IOException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {

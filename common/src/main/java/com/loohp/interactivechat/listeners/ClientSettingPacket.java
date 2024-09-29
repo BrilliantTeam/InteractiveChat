@@ -31,6 +31,7 @@ import com.loohp.interactivechat.nms.NMS;
 import com.loohp.interactivechat.utils.ChatColorUtils;
 import com.loohp.interactivechat.utils.MCVersion;
 import com.loohp.interactivechat.utils.PlayerUtils;
+import com.loohp.interactivechat.utils.ScheduleUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -73,9 +74,9 @@ public class ClientSettingPacket {
         boolean colorSettings = NMS.getInstance().getColorSettingsFromClientInformationPacket(packet);
         boolean originalColorSettings = PlayerUtils.canChatColor(player);
         if (originalColorSettings && !colorSettings) {
-            Bukkit.getScheduler().runTaskLater(InteractiveChat.plugin, () -> player.sendMessage(ChatColorUtils.translateAlternateColorCodes('&', ConfigManager.getConfig().getString("Messages.ColorsDisabled"))), 5);
+            ScheduleUtil.ENTITY.runTaskLater(InteractiveChat.plugin, player, () -> player.sendMessage(ChatColorUtils.translateAlternateColorCodes('&', ConfigManager.getConfig().getString("Messages.ColorsDisabled"))), 5);
         } else if (!originalColorSettings && colorSettings) {
-            Bukkit.getScheduler().runTaskLater(InteractiveChat.plugin, () -> player.sendMessage(ChatColorUtils.translateAlternateColorCodes('&', ConfigManager.getConfig().getString("Messages.ColorsReEnabled"))), 5);
+            ScheduleUtil.ENTITY.runTaskLater(InteractiveChat.plugin, player, () -> player.sendMessage(ChatColorUtils.translateAlternateColorCodes('&', ConfigManager.getConfig().getString("Messages.ColorsReEnabled"))), 5);
         }
     }
 

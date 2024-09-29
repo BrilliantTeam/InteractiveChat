@@ -24,6 +24,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -308,4 +309,13 @@ public class ICPlayerEquipment implements EntityEquipment {
         return null;
     }
 
+    @Override
+    public float getDropChance(@NotNull EquipmentSlot equipmentSlot) {
+        return dropChance.get(equipmentSlot);
+    }
+
+    @Override
+    public void setDropChance(@NotNull EquipmentSlot equipmentSlot, float v) {
+        dropChance.put(equipmentSlot, v);
+    }
 }

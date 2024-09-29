@@ -26,6 +26,7 @@ import com.loohp.interactivechat.InteractiveChat;
 import com.loohp.interactivechat.api.InteractiveChatAPI;
 import com.loohp.interactivechat.nms.NMS;
 import com.loohp.interactivechat.utils.ChatColorUtils;
+import com.loohp.interactivechat.utils.ScheduleUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -60,7 +61,7 @@ public class ModernChatCompletionTask implements Listener {
     }
 
     private void run() {
-        Bukkit.getScheduler().runTaskTimerAsynchronously(InteractiveChat.plugin, () -> {
+        ScheduleUtil.GLOBAL.runTaskTimerAsynchronously(InteractiveChat.plugin, () -> {
             if (InteractiveChat.chatTabCompletionsEnabled) {
                 for (Player tabCompleter : Bukkit.getOnlinePlayers()) {
                     Set<String> tab = ConcurrentHashMap.newKeySet();
@@ -99,7 +100,7 @@ public class ModernChatCompletionTask implements Listener {
                     oldList.addAll(add);
                 }
             }
-        }, 0, 10);
+        }, 1, 10);
     }
 
 }

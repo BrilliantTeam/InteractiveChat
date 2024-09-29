@@ -31,16 +31,7 @@ import com.loohp.interactivechat.config.ConfigManager;
 import com.loohp.interactivechat.nms.NMS;
 import com.loohp.interactivechat.objectholders.ICInventoryHolder;
 import com.loohp.interactivechat.objectholders.ICPlayer;
-import com.loohp.interactivechat.utils.ChatColorUtils;
-import com.loohp.interactivechat.utils.CompassUtils;
-import com.loohp.interactivechat.utils.ComponentReplacing;
-import com.loohp.interactivechat.utils.HashUtils;
-import com.loohp.interactivechat.utils.InteractiveChatComponentSerializer;
-import com.loohp.interactivechat.utils.LanguageUtils;
-import com.loohp.interactivechat.utils.MCVersion;
-import com.loohp.interactivechat.utils.PlaceholderParser;
-import com.loohp.interactivechat.utils.PlayerUtils;
-import com.loohp.interactivechat.utils.SkinUtils;
+import com.loohp.interactivechat.utils.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -193,7 +184,7 @@ public class InventoryDisplay {
         inv = event.getInventory();
 
         Inventory finalRef = inv;
-        Bukkit.getScheduler().runTaskAsynchronously(InteractiveChat.plugin, () -> {
+        ScheduleUtil.GLOBAL.runTaskAsynchronously(InteractiveChat.plugin, () -> {
             ItemStack skull = SkinUtils.getSkull(player.getUniqueId());
             ItemMeta meta = skull.getItemMeta();
             String name = ChatColorUtils.translateAlternateColorCodes('&', PlaceholderParser.parse(player, InteractiveChat.invSkullName));
@@ -303,7 +294,7 @@ public class InventoryDisplay {
         inv2 = event2.getInventory();
 
         Inventory finalRef = inv;
-        Bukkit.getScheduler().runTaskAsynchronously(InteractiveChat.plugin, () -> {
+        ScheduleUtil.GLOBAL.runTaskAsynchronously(InteractiveChat.plugin, () -> {
             ItemStack skull = SkinUtils.getSkull(player.getUniqueId());
             ItemMeta meta = skull.getItemMeta();
             String name = ChatColorUtils.translateAlternateColorCodes('&', PlaceholderParser.parse(player, InteractiveChat.invSkullName));

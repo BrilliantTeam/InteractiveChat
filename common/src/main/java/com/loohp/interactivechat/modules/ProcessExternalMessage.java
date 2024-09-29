@@ -31,18 +31,7 @@ import com.loohp.interactivechat.objectholders.ICPlayerFactory;
 import com.loohp.interactivechat.objectholders.ProcessSenderResult;
 import com.loohp.interactivechat.objectholders.WebData;
 import com.loohp.interactivechat.registry.Registry;
-import com.loohp.interactivechat.utils.ChatColorUtils;
-import com.loohp.interactivechat.utils.ComponentFont;
-import com.loohp.interactivechat.utils.ComponentModernizing;
-import com.loohp.interactivechat.utils.ComponentReplacing;
-import com.loohp.interactivechat.utils.CustomStringUtils;
-import com.loohp.interactivechat.utils.InteractiveChatComponentSerializer;
-import com.loohp.interactivechat.utils.ItemStackUtils;
-import com.loohp.interactivechat.utils.JsonUtils;
-import com.loohp.interactivechat.utils.MCVersion;
-import com.loohp.interactivechat.utils.PlaceholderParser;
-import com.loohp.interactivechat.utils.PlayerUtils;
-import com.loohp.interactivechat.utils.RarityUtils;
+import com.loohp.interactivechat.utils.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.ChatColor;
@@ -340,7 +329,7 @@ public class ProcessExternalMessage {
             }
         }
 
-        Bukkit.getScheduler().runTaskLater(InteractiveChat.plugin, () -> {
+        ScheduleUtil.GLOBAL.runTaskLater(InteractiveChat.plugin, () -> {
             InteractiveChat.keyTime.remove(rawMessageKey);
             InteractiveChat.keyPlayer.remove(rawMessageKey);
         }, 5);

@@ -27,6 +27,7 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.WrappedServerPing;
 import com.loohp.interactivechat.InteractiveChat;
 import com.loohp.interactivechat.registry.Registry;
+import com.loohp.interactivechat.utils.ScheduleUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -74,9 +75,9 @@ public class ServerPingListener implements Listener {
             }
         });
 
-        Bukkit.getScheduler().runTaskTimerAsynchronously(InteractiveChat.plugin, () -> {
+        ScheduleUtil.GLOBAL.runTaskTimerAsynchronously(InteractiveChat.plugin, () -> {
             REQUESTS.entrySet().removeIf(entry -> System.currentTimeMillis() > entry.getValue());
-        }, 0, 20);
+        }, 1, 20);
     }
 
 }

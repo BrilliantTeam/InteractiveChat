@@ -21,6 +21,7 @@
 package com.loohp.interactivechat.objectholders;
 
 import com.loohp.interactivechat.InteractiveChat;
+import com.loohp.interactivechat.utils.ScheduleUtil;
 import org.bukkit.Bukkit;
 
 import java.util.UUID;
@@ -30,13 +31,13 @@ public class MentionPair {
     private final UUID sender;
     private final UUID receiver;
     private final long timestamp;
-    private final int taskid;
+    private final ICTask task;
 
     public MentionPair(UUID sender, UUID reciever) {
         this.sender = sender;
         this.receiver = reciever;
         this.timestamp = System.currentTimeMillis();
-        this.taskid = run();
+        this.task = run();
     }
 
     public UUID getSender() {
@@ -48,17 +49,23 @@ public class MentionPair {
     }
 
     public void remove() {
-        Bukkit.getScheduler().cancelTask(taskid);
+        task.cancel();
         InteractiveChat.mentionPair.remove(this);
     }
 
-    private int run() {
-        return Bukkit.getScheduler().runTaskTimer(InteractiveChat.plugin, () -> {
+    private ICTask run() {
+        Runnable t = () -> {
             if ((System.currentTimeMillis() - timestamp) > 3000) {
-                Bukkit.getScheduler().cancelTask(taskid);
+                task.cancel();
                 InteractiveChat.mentionPair.remove(this);
             }
-        }, 0, 5).getTaskId();
+        };
+
+        if (ScheduleUtil.isFolia) {
+            return new ICTask(Bukkit.getGlobalRegionScheduler().runAtFixedRate(InteractiveChat.plugin, (ignored) -> t.run(), 1, 5));
+        }
+
+        return new ICTask(Bukkit.getScheduler().runTaskTimer(InteractiveChat.plugin, t, 0, 5));
     }
 
     @Override
@@ -67,7 +74,7 @@ public class MentionPair {
         int result = 1;
         result = prime * result + ((receiver == null) ? 0 : receiver.hashCode());
         result = prime * result + ((sender == null) ? 0 : sender.hashCode());
-        result = prime * result + taskid;
+        result = prime * result + task.getId();
         result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
         return result;
     }
@@ -95,7 +102,7 @@ public class MentionPair {
         } else if (!sender.equals(other.sender)) {
             return false;
         }
-        if (taskid != other.taskid) {
+        if (task.getId() != other.task.getId()) {
             return false;
         }
         return timestamp == other.timestamp;

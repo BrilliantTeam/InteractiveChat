@@ -72,7 +72,7 @@ public class LanguageUtils {
     @SuppressWarnings("unchecked")
     public static void loadTranslations(String language) {
         Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[InteractiveChat] Loading languages...");
-        Bukkit.getScheduler().runTaskAsynchronously(InteractiveChat.plugin, () -> {
+        ScheduleUtil.GLOBAL.runTaskAsynchronously(InteractiveChat.plugin, () -> {
             while (lock.get()) {
                 try {
                     TimeUnit.MILLISECONDS.sleep(1);

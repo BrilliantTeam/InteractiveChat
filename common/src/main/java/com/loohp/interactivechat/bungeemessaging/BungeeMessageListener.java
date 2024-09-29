@@ -44,11 +44,7 @@ import com.loohp.interactivechat.objectholders.ICPlayerFactory;
 import com.loohp.interactivechat.objectholders.MentionPair;
 import com.loohp.interactivechat.objectholders.SignedMessageModificationData;
 import com.loohp.interactivechat.objectholders.ValueTrios;
-import com.loohp.interactivechat.utils.CustomArrayUtils;
-import com.loohp.interactivechat.utils.DataTypeIO;
-import com.loohp.interactivechat.utils.InventoryUtils;
-import com.loohp.interactivechat.utils.PlaceholderParser;
-import com.loohp.interactivechat.utils.PlayerUtils;
+import com.loohp.interactivechat.utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -88,7 +84,7 @@ public class BungeeMessageListener implements PluginMessageListener {
 
     public void addToComplete(UUID uuid, CompletableFuture<?> future) {
         toComplete.put(uuid, future);
-        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
+        ScheduleUtil.GLOBAL.runTaskLaterAsynchronously(plugin, () -> {
             CompletableFuture<?> f = toComplete.remove(uuid);
             if (f != null && !f.isDone() && !f.isCompletedExceptionally() && !f.isCancelled()) {
                 f.completeExceptionally(new TimeoutException("The proxy did not respond in time"));
@@ -103,7 +99,7 @@ public class BungeeMessageListener implements PluginMessageListener {
             return;
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(InteractiveChat.plugin, () -> {
+        ScheduleUtil.GLOBAL.runTaskAsynchronously(InteractiveChat.plugin, () -> {
             try {
                 ByteArrayDataInput in = ByteStreams.newDataInput(bytes);
 
@@ -252,7 +248,7 @@ public class BungeeMessageListener implements PluginMessageListener {
                             break;
                         }
                         InteractiveChat.messages.put(message, uuid3);
-                        Bukkit.getScheduler().runTaskLater(InteractiveChat.plugin, () -> InteractiveChat.messages.remove(message), 60);
+                        ScheduleUtil.GLOBAL.runTaskLater(InteractiveChat.plugin, () -> InteractiveChat.messages.remove(message), 60);
                         break;
                     case 0x07:
                         int cooldownType = input.readByte();
@@ -430,7 +426,7 @@ public class BungeeMessageListener implements PluginMessageListener {
                         String command = DataTypeIO.readString(input, StandardCharsets.UTF_8);
                         Player player4 = Bukkit.getPlayer(playerUUID5);
                         if (player4 != null) {
-                            Bukkit.getScheduler().runTask(InteractiveChat.plugin, () -> PlayerUtils.dispatchCommandAsPlayer(player4, command));
+                            ScheduleUtil.GLOBAL.runTask(InteractiveChat.plugin, () -> PlayerUtils.dispatchCommandAsPlayer(player4, command));
                         }
                         break;
                     case 0xFF:
@@ -439,7 +435,7 @@ public class BungeeMessageListener implements PluginMessageListener {
                         byte[] customData = new byte[dataLength];
                         input.readFully(customData);
                         ProxyCustomDataRecievedEvent dataEvent = new ProxyCustomDataRecievedEvent(customChannel, customData);
-                        Bukkit.getPluginManager().callEvent(dataEvent);
+                        ScheduleUtil.GLOBAL.runTask(InteractiveChat.plugin, () -> Bukkit.getPluginManager().callEvent(dataEvent));
                         break;
                 }
             } catch (Throwable e) {

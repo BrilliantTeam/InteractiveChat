@@ -47,7 +47,7 @@ public class PlaceholderParser {
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("[%]([^%]+)[%]");
 
     static {
-        Bukkit.getScheduler().runTaskTimerAsynchronously(InteractiveChat.plugin, () -> {
+        ScheduleUtil.GLOBAL.runTaskTimerAsynchronously(InteractiveChat.plugin, () -> {
             if (InteractiveChat.bungeecordMode) {
                 if (InteractiveChat.useTooltipOnTab) {
                     for (Player player : Bukkit.getOnlinePlayers()) {

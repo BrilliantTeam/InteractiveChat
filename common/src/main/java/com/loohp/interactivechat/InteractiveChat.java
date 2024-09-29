@@ -67,11 +67,7 @@ import com.loohp.interactivechat.objectholders.SignedMessageModificationData;
 import com.loohp.interactivechat.objectholders.ValuePairs;
 import com.loohp.interactivechat.placeholderapi.Placeholders;
 import com.loohp.interactivechat.updater.Updater;
-import com.loohp.interactivechat.utils.InteractiveChatComponentSerializer;
-import com.loohp.interactivechat.utils.InventoryUtils;
-import com.loohp.interactivechat.utils.MCVersion;
-import com.loohp.interactivechat.utils.PlaceholderParser;
-import com.loohp.interactivechat.utils.PlayerUtils;
+import com.loohp.interactivechat.utils.*;
 import github.scarsz.discordsrv.DiscordSRV;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -372,13 +368,15 @@ public class InteractiveChat extends JavaPlugin {
 
     public static void closeInventoryViews(Inventory inventory) {
         for (Player player : Bukkit.getOnlinePlayers()) {
-            Inventory topInventory = player.getOpenInventory().getTopInventory();
-            if (topInventory.equals(inventory)) {
-                player.closeInventory();
-                if (InteractiveChat.viewingInv1.remove(player.getUniqueId()) != null) {
-                    InventoryUtils.restorePlayerInventory(player);
+            ScheduleUtil.ENTITY.runTask(InteractiveChat.plugin, player, () -> {
+                Inventory topInventory = player.getOpenInventory().getTopInventory();
+                if (topInventory.equals(inventory)) {
+                    player.closeInventory();
+                    if (InteractiveChat.viewingInv1.remove(player.getUniqueId()) != null) {
+                        InventoryUtils.restorePlayerInventory(player);
+                    }
                 }
-            }
+            });
         }
     }
 
@@ -421,7 +419,7 @@ public class InteractiveChat extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new Debug(), this);
 
-        Metrics metrics = new Metrics(this, BSTATS_PLUGIN_ID);
+        // Metrics metrics = new Metrics(this, BSTATS_PLUGIN_ID);
 
         exactMinecraftVersion = Bukkit.getVersion().substring(Bukkit.getVersion().indexOf("(") + 5, Bukkit.getVersion().indexOf(")"));
         version = MCVersion.resolve();
@@ -454,9 +452,9 @@ public class InteractiveChat extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new ServerPingListener(), this);
             ServerPingListener.listen();
 
-            Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+            ScheduleUtil.GLOBAL.runTaskTimerAsynchronously(plugin, () -> {
                 if (parsePAPIOnMainThread) {
-                    Bukkit.getScheduler().runTask(plugin, () -> {
+                    ScheduleUtil.GLOBAL.runTask(plugin, () -> {
                         for (Player player : Bukkit.getOnlinePlayers()) {
                             PlaceholderParser.parse(ICPlayerFactory.getICPlayer(player), usePlayerNameHoverText);
                             PlaceholderParser.parse(ICPlayerFactory.getICPlayer(player), usePlayerNameClickValue);
@@ -468,27 +466,27 @@ public class InteractiveChat extends JavaPlugin {
                         PlaceholderParser.parse(ICPlayerFactory.getICPlayer(player), usePlayerNameClickValue);
                     }
                 }
-            }, 0, 100);
+            }, 1, 100);
 
-            Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            ScheduleUtil.GLOBAL.runTaskTimer(plugin, () -> {
                 Map<UUID, Boolean> vanishStates = new HashMap<>();
                 for (ICPlayer player : ICPlayerFactory.getOnlineICPlayers()) {
                     if (player.isLocal()) {
                         vanishStates.put(player.getUniqueId(), player.isVanished());
                     }
                 }
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                ScheduleUtil.GLOBAL.runTaskAsynchronously(plugin, () -> {
                     try {
                         BungeeMessageSender.updatePlayersVanished(System.currentTimeMillis(), vanishStates);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 });
-            }, 0, 40);
+            }, 1, 40);
         }
 
         BiConsumer<String, Inventory> inventoryRemovalListener = (hash, inv) -> {
-            Bukkit.getScheduler().runTask(InteractiveChat.plugin, () -> closeInventoryViews(inv));
+            ScheduleUtil.GLOBAL.runTask(InteractiveChat.plugin, () -> closeInventoryViews(inv));
         };
         itemDisplay.registerRemovalListener(inventoryRemovalListener);
         inventoryDisplay.registerRemovalListener(inventoryRemovalListener);
@@ -497,12 +495,14 @@ public class InteractiveChat extends JavaPlugin {
         enderDisplay.registerRemovalListener(inventoryRemovalListener);
 
         mapDisplay.registerRemovalListener((hash, item) -> {
-            Bukkit.getScheduler().runTask(InteractiveChat.plugin, () -> {
+            ScheduleUtil.GLOBAL.runTask(InteractiveChat.plugin, () -> {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     boolean removed = MapViewer.MAP_VIEWERS.remove(player, item);
                     if (removed) {
                         //noinspection deprecation
-                        player.getInventory().setItemInHand(player.getInventory().getItemInHand());
+                        ScheduleUtil.ENTITY.runTask(InteractiveChat.plugin, player, () -> {
+                            player.getInventory().setItemInHand(player.getInventory().getItemInHand());
+                        });
                     }
                 }
             });
@@ -629,7 +629,7 @@ public class InteractiveChat extends JavaPlugin {
         PlayernameDisplay.setup();
         MentionDisplay.setup();
 
-        Charts.setup(metrics);
+        // Charts.setup(metrics);
 
         if (updaterEnabled) {
             getServer().getPluginManager().registerEvents(new Updater(), this);
@@ -661,7 +661,7 @@ public class InteractiveChat extends JavaPlugin {
 
         getServer().getConsoleSender().sendMessage(ChatColor.GREEN + "[InteractiveChat] InteractiveChat has been Enabled!");
 
-        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+        ScheduleUtil.GLOBAL.runTaskTimerAsynchronously(this, () -> {
             if (queueRemoteUpdate && Bukkit.getOnlinePlayers().size() > 0) {
                 try {
                     if (BungeeMessageSender.resetAndForwardPlaceholderList(System.currentTimeMillis(), InteractiveChat.placeholderList.values())) {
@@ -671,7 +671,7 @@ public class InteractiveChat extends JavaPlugin {
                     e.printStackTrace();
                 }
             }
-        }, 0, 100);
+        }, 1, 100);
 
         try {
             Logger logger = LogManager.getRootLogger();
@@ -699,14 +699,14 @@ public class InteractiveChat extends JavaPlugin {
     }
 
     private void gc() {
-        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+        ScheduleUtil.GLOBAL.runTaskTimerAsynchronously(this, () -> {
             itemDisplay.cleanUp();
             inventoryDisplay.cleanUp();
             inventoryDisplay1Upper.cleanUp();
             inventoryDisplay1Lower.cleanUp();
             enderDisplay.cleanUp();
             mapDisplay.cleanUp();
-        }, 0, 1200);
+        }, 1L, 1200L);
     }
 
 }

@@ -29,6 +29,7 @@ import com.loohp.interactivechat.InteractiveChat;
 import com.loohp.interactivechat.utils.MCVersion;
 import com.loohp.interactivechat.utils.ModernChatSigningUtils;
 import com.loohp.interactivechat.utils.PlayerUtils;
+import com.loohp.interactivechat.utils.ScheduleUtil;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -69,19 +70,19 @@ public class RedispatchSignedPacket {
                             event.setReadOnly(false);
                             event.setCancelled(true);
                             event.setReadOnly(true);
-                            Bukkit.getScheduler().runTask(InteractiveChat.plugin, () -> player.chat(message));
+                            ScheduleUtil.ENTITY.runTask(InteractiveChat.plugin, player, () -> player.chat(message));
                         } else {
                             if (!ModernChatSigningUtils.isChatMessageIllegal(message)) {
                                 event.setReadOnly(false);
                                 event.setCancelled(true);
                                 event.setReadOnly(true);
                                 if (player.isConversing()) {
-                                    Bukkit.getScheduler().runTask(InteractiveChat.plugin, () -> player.acceptConversationInput(message));
+                                    ScheduleUtil.ENTITY.runTask(InteractiveChat.plugin, player, () -> player.acceptConversationInput(message));
                                     if (!InteractiveChat.skipDetectSpamRateWhenDispatchingUnsignedPackets) {
-                                        Bukkit.getScheduler().runTaskAsynchronously(InteractiveChat.plugin, () -> ModernChatSigningUtils.detectRateSpam(player, message));
+                                        ScheduleUtil.GLOBAL.runTaskAsynchronously(InteractiveChat.plugin, () -> ModernChatSigningUtils.detectRateSpam(player, message));
                                     }
                                 } else {
-                                    Bukkit.getScheduler().runTaskAsynchronously(InteractiveChat.plugin, () -> {
+                                    ScheduleUtil.GLOBAL.runTaskAsynchronously(InteractiveChat.plugin, () -> {
                                         try {
                                             Object decorated = ModernChatSigningUtils.getChatDecorator(player, LegacyComponentSerializer.legacySection().deserialize(message)).get();
                                             PlayerUtils.chatAsPlayer(player, message, decorated);
@@ -104,7 +105,7 @@ public class RedispatchSignedPacket {
                             event.setReadOnly(false);
                             event.setCancelled(true);
                             event.setReadOnly(true);
-                            Bukkit.getScheduler().runTask(InteractiveChat.plugin, () -> {
+                            ScheduleUtil.ENTITY.runTask(InteractiveChat.plugin, player, () -> {
                                 PlayerUtils.dispatchCommandAsPlayer(player, command);
                                 if (!InteractiveChat.skipDetectSpamRateWhenDispatchingUnsignedPackets) {
                                     ModernChatSigningUtils.detectRateSpam(player, command);

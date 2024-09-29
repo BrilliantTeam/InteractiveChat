@@ -52,18 +52,7 @@ import com.loohp.interactivechat.objectholders.ICPlayer;
 import com.loohp.interactivechat.objectholders.ICPlayerFactory;
 import com.loohp.interactivechat.objectholders.ProcessSenderResult;
 import com.loohp.interactivechat.registry.Registry;
-import com.loohp.interactivechat.utils.ChatColorUtils;
-import com.loohp.interactivechat.utils.ChatComponentType;
-import com.loohp.interactivechat.utils.ComponentFont;
-import com.loohp.interactivechat.utils.ComponentModernizing;
-import com.loohp.interactivechat.utils.ComponentReplacing;
-import com.loohp.interactivechat.utils.ComponentStyling;
-import com.loohp.interactivechat.utils.CustomArrayUtils;
-import com.loohp.interactivechat.utils.InteractiveChatComponentSerializer;
-import com.loohp.interactivechat.utils.JsonUtils;
-import com.loohp.interactivechat.utils.MCVersion;
-import com.loohp.interactivechat.utils.ModernChatSigningUtils;
-import com.loohp.interactivechat.utils.PlayerUtils;
+import com.loohp.interactivechat.utils.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -575,7 +564,7 @@ public class OutMessagePacket implements Listener {
 
             if (sender.isPresent() && !sender.get().isLocal()) {
                 if (isFiltered) {
-                    Bukkit.getScheduler().runTaskLaterAsynchronously(InteractiveChat.plugin, () -> {
+                    ScheduleUtil.GLOBAL.runTaskLaterAsynchronously(InteractiveChat.plugin, () -> {
                         SERVICE.execute(() -> {
                             processPacket(receiver, determinedSender, packet, messageUUID, false, packetHandler);
                         }, receiver, messageUUID);
@@ -673,7 +662,7 @@ public class OutMessagePacket implements Listener {
             PreChatPacketSendEvent sendEvent = new PreChatPacketSendEvent(true, receiver, packet, component, postEventSenderUUID, originalPacket, InteractiveChat.sendOriginalIfTooLong, longerThanMaxLength);
             Bukkit.getPluginManager().callEvent(sendEvent);
 
-            Bukkit.getScheduler().runTaskLater(InteractiveChat.plugin, () -> {
+            ScheduleUtil.GLOBAL.runTaskLater(InteractiveChat.plugin, () -> {
                 InteractiveChat.keyTime.remove(rawMessageKey);
                 InteractiveChat.keyPlayer.remove(rawMessageKey);
             }, 10);
